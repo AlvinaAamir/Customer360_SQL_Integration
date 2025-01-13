@@ -1,48 +1,80 @@
-# Customer360 SQL Integration Project
+# Customer360 Project
 
-## Objective
-The goal of this project was to create a Customer360 view for an online retailer by integrating data from multiple tables, providing insights into customer conversions, order history, and cumulative revenue.
+## Overview
+The Customer360 Project aims to create a unified view of customer activity for an online retailer. This view integrates data from multiple tables, providing comprehensive insights into customer conversions, order history, and cumulative revenue. These insights can be used to understand customer behavior better and support data-driven business decisions.
 
----
+## Objectives
+- Integrate data from various fact and dimension tables.
+- Create a detailed Customer360 view containing specified attributes such as customer conversion details, first order data, and order history.
+- Ensure data accuracy, eliminate overlaps, and provide actionable insights through SQL.
 
-## Methodology
-1. **Data Integration**:
-   - Utilized tables from `mban_db`:
-     - `fact_tables.orders`
-     - `fact_tables.conversions`
-     - `dimensions.date_dimension`
-     - `dimensions.product_dimension`
-     - `dimensions.customer_dimension`
-   - Created a `customer360` schema to store the integrated view.
+## Features
+The resulting Customer360 table includes:
 
-2. **CTEs and Transformations**:
-   - **CustomerConversionData**: Captured customer conversions, including type, date, week, and channel.
-   - **FirstOrderPlaced**: Aggregated first order details for each conversion.
-   - **OrderHistory**: Calculated weekly metrics (e.g., orders placed, revenue, discounts).
-   - **AllWeeks**: Ensured inclusion of all possible weeks within conversion periods.
-   - **customer360_cte**: Combined all CTEs for the final integrated view.
+### **Static Customer/Conversion Data**
+- **customer_id:** Unique identifier for the customer.
+- **first_name, last_name:** Customer's name.
+- **conversion_id:** Unique identifier for each conversion.
+- **conversion_number:** Sequential conversion count for each customer.
+- **conversion_type:** Type of conversion (activation or reactivation).
+- **conversion_date and conversion_week:** Date and week of conversion.
+- **next_conversion_week:** Week of the next conversion or `NULL` if none exists.
+- **conversion_channel:** Channel through which the conversion occurred.
 
-3. **Final View**:
-   - Generated rows for each week from the conversion week to the next, including metrics like lifetime cumulative revenue.
+### **First Order Data**
+- **first_order_week:** Week of the first order associated with the conversion.
+- **first_order_total_paid:** Total paid for the first order.
 
----
+### **Order History**
+- **week_counter:** Sequence of weeks starting from the conversion week.
+- **order_week:** Specific week of the order.
+- **orders_placed:** Binary indicator (1/0) of whether an order was placed.
+- **total_before_discounts:** Total order value before discounts for a given week.
+- **total_discounts:** Discounts applied in a given week.
+- **total_paid_in_week:** Total paid after discounts in a given week.
+- **conversion_cumulative_revenue:** Cumulative revenue during the conversion period.
+- **lifetime_cumulative_revenue:** Cumulative revenue since the customer's first activation.
 
-## Challenges
-- **Schema Creation**: Issues with creating the `customer360` schema, resolved using `SELECT INTO` commands.
-- **Data Joins**: Ensured accurate joins between fact and dimension tables.
-- **Next Conversion Week**: Used conditional functions (`ISNULL`) to handle missing data.
-- **Performance**: Optimized SQL queries using window functions to handle complex aggregations efficiently.
+## Data Sources
+The project utilizes the following tables from the `mmai_db` database:
+- **fact_tables.orders**
+- **fact_tables.conversions**
+- **dimensions.date_dimension**
+- **dimensions.product_dimension**
+- **dimensions.customer_dimension**
 
----
+## Steps Taken
+1. **Schema Creation:**
+   - Created a schema named `customer360` to store the final view and intermediate data.
 
-## Files
-1. **SQL Script**: [Customer360_Final.sql](./Customer360_Final.sql)
-2. **Final Report**: [Customer360 Project Final Report.pdf](./Customer360%20Project%20Final%20Report.pdf)
+2. **Static Customer Data:**
+   - Captured customer conversion details using SQL functions like `ROW_NUMBER()` and `LEAD()`.
 
----
+3. **First Order Data:**
+   - Used `FIRST_VALUE()` to retrieve details of the first order per conversion, ensuring accuracy.
+
+4. **Order History:**
+   - Aggregated weekly data with key metrics, ensuring all weeks are covered, including those with no orders.
+   - Avoided overlaps in conversion periods using conditions like `order_week < next_conversion_week OR next_conversion_week IS NULL`.
+
+5. **Cumulative Revenue:**
+   - Calculated revenue metrics using SQL window functions for both the conversion period and lifetime revenue.
+
+6. **Final Table:**
+   - Combined all data into the final Customer360 view, logically ordered for analysis.
+
+## Challenges Addressed
+- Ensuring accurate joins between fact and dimension tables.
+- Handling weeks with no orders while maintaining data integrity.
+- Avoiding overlaps in conversion periods.
+- Optimizing SQL queries for large datasets.
+
+## Deliverables
+- **SQL Script:** Contains the SQL queries used to generate the Customer360 view.
+- **Project Report:** A detailed explanation of the methodology, challenges, and results.
 
 ## How to Use
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/YourUsername/Customer360_SQL_Integration.git
-
+1. Clone this repository.
+2. Run the SQL script (`Customer360_Code.sql`) on the provided database schema.
+3. The `customer360.Customer360_View` table will be created in your database.
+4. Refer to the project report (`Customer360 Project Report.pdf`) for detailed documentation.
